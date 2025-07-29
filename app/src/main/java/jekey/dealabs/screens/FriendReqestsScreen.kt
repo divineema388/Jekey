@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
 import jeky.dealabs.models.User
 import jeky.dealabs.utils.FirestoreUtils
 
@@ -26,10 +27,14 @@ fun FriendRequestsScreen(navController: NavHostController, auth: FirebaseAuth) {
 
     val friendRequests = remember { mutableStateListOf<User>() }
     var isLoading by remember { mutableStateOf(true) }
+    var requestCount by remember { mutableStateOf(0) }
 
-    LaunchedEffect(currentUser?.uid) {
+    // Remember the listener to avoid memory leaks
+    var listenerRegistration by remember { mutableStateOf<ListenerRegistration?>(null) }
+
+    DisposableEffect(currentUser?.uid) {
         currentUser?.uid?.let { uid ->
-            firestore.collection("users").document(uid)
+            listenerRegistration = firestore.collection("users").document(uid)
                 .addSnapshotListener { currentUserSnapshot, e ->
                     if (e != null) {
                         Toast.makeText(context, "Error loading requests: ${e.message}", Toast.LENGTH_SHORT).show()
@@ -40,36 +45,56 @@ fun FriendRequestsScreen(navController: NavHostController, auth: FirebaseAuth) {
                     if (currentUserSnapshot != null && currentUserSnapshot.exists()) {
                         val user = currentUserSnapshot.toObject(User::class.java)
                         val receivedRequestUids = user?.friendRequestsReceived ?: emptyList()
+                        requestCount = receivedRequestUids.size
 
                         if (receivedRequestUids.isNotEmpty()) {
-                            firestore.collection("users")
-                                .whereIn("uid", receivedRequestUids)
-                                .get()
-                                .addOnSuccessListener { querySnapshot ->
-                                    friendRequests.clear()
-                                    friendRequests.addAll(querySnapshot.documents.mapNotNull { it.toObject(User::class.java) })
-                                    isLoading = false
-                                }
-                                .addOnFailureListener { innerE ->
-                                    Toast.makeText(context, "Error fetching request user details: ${innerE.message}", Toast.LENGTH_SHORT).show()
-                                    isLoading = false
-                                }
+                            // Use chunked approach for large request lists (Firestore has 10 item limit for whereIn)
+                            val chunks = receivedRequestUids.chunked(10)
+                            val allRequests = mutableListOf<User>()
+                            var completedChunks = 0
+
+                            chunks.forEach { chunk ->
+                                firestore.collection("users")
+                                    .whereIn("uid", chunk)
+                                    .get()
+                                    .addOnSuccessListener { querySnapshot ->
+                                        allRequests.addAll(querySnapshot.documents.mapNotNull { 
+                                            it.toObject(User::class.java) 
+                                        })
+                                        completedChunks++
+                                        
+                                        if (completedChunks == chunks.size) {
+                                            friendRequests.clear()
+                                            friendRequests.addAll(allRequests.sortedBy { it.displayName })
+                                            isLoading = false
+                                        }
+                                    }
+                                    .addOnFailureListener { innerE ->
+                                        Toast.makeText(context, "Error fetching request user details: ${innerE.message}", Toast.LENGTH_SHORT).show()
+                                        isLoading = false
+                                    }
+                            }
                         } else {
                             friendRequests.clear()
                             isLoading = false
                         }
                     } else {
                         friendRequests.clear()
+                        requestCount = 0
                         isLoading = false
                     }
                 }
+        }
+
+        onDispose {
+            listenerRegistration?.remove()
         }
     }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Friend Requests") },
+                title = { Text("Friend Requests ($requestCount)") },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
                         Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
@@ -85,16 +110,31 @@ fun FriendRequestsScreen(navController: NavHostController, auth: FirebaseAuth) {
                 .padding(16.dp)
         ) {
             if (isLoading) {
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = androidx.compose.ui.Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+                Spacer(modifier = Modifier.height(16.dp))
                 LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
             } else if (friendRequests.isEmpty()) {
-                Text(
-                    text = "No pending friend requests.",
-                    modifier = Modifier.padding(8.dp),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                    )
+                ) {
+                    Text(
+                        text = "No pending friend requests.",
+                        modifier = Modifier.padding(16.dp),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             } else {
                 LazyColumn {
-                    items(friendRequests) { user ->
+                    items(friendRequests, key = { it.uid }) { user ->
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -108,9 +148,16 @@ fun FriendRequestsScreen(navController: NavHostController, auth: FirebaseAuth) {
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
                             ) {
-                                Column {
-                                    Text(text = user.displayName, style = MaterialTheme.typography.titleMedium)
-                                    Text(text = user.email, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = user.displayName,
+                                        style = MaterialTheme.typography.titleMedium
+                                    )
+                                    Text(
+                                        text = user.email,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
                                 }
 
                                 Row {
@@ -122,8 +169,12 @@ fun FriendRequestsScreen(navController: NavHostController, auth: FirebaseAuth) {
                                                     currentUserId = currentId,
                                                     requesterId = user.uid,
                                                     context = context,
-                                                    onSuccess = { Toast.makeText(context, "Accepted ${user.displayName}", Toast.LENGTH_SHORT).show() },
-                                                    onFailure = { e -> Toast.makeText(context, "Error accepting: ${e.message}", Toast.LENGTH_SHORT).show() }
+                                                    onSuccess = { 
+                                                        Toast.makeText(context, "Accepted ${user.displayName}", Toast.LENGTH_SHORT).show() 
+                                                    },
+                                                    onFailure = { e -> 
+                                                        Toast.makeText(context, "Error accepting: ${e.message}", Toast.LENGTH_SHORT).show() 
+                                                    }
                                                 )
                                             }
                                         }
@@ -139,11 +190,18 @@ fun FriendRequestsScreen(navController: NavHostController, auth: FirebaseAuth) {
                                                     currentUserId = currentId,
                                                     requesterId = user.uid,
                                                     context = context,
-                                                    onSuccess = { Toast.makeText(context, "Declined ${user.displayName}", Toast.LENGTH_SHORT).show() },
-                                                    onFailure = { e -> Toast.makeText(context, "Error declining: ${e.message}", Toast.LENGTH_SHORT).show() }
+                                                    onSuccess = { 
+                                                        Toast.makeText(context, "Declined ${user.displayName}", Toast.LENGTH_SHORT).show() 
+                                                    },
+                                                    onFailure = { e -> 
+                                                        Toast.makeText(context, "Error declining: ${e.message}", Toast.LENGTH_SHORT).show() 
+                                                    }
                                                 )
                                             }
-                                        }
+                                        },
+                                        colors = ButtonDefaults.outlinedButtonColors(
+                                            contentColor = MaterialTheme.colorScheme.error
+                                        )
                                     ) {
                                         Text("Decline")
                                     }

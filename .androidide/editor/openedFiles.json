@@ -1,65 +1,65 @@
 {
   "allFiles": [
     {
-      "file": "/storage/emulated/0/AndroidIDEProjects/Jekey/app/src/main/java/jekey/dealabs/MainActivity.kt",
+      "file": "/storage/emulated/0/AndroidIDEProjects/Jekey/app/src/main/java/jekey/dealabs/Utils/FirestoreUtils.kt",
       "selection": {
         "end": {
-          "column": 26,
-          "index": 4678,
-          "line": 117
+          "column": 1,
+          "index": 16463,
+          "line": 459
         },
         "start": {
-          "column": 26,
-          "index": 4678,
-          "line": 117
+          "column": 1,
+          "index": 16463,
+          "line": 459
         }
       }
     },
     {
-      "file": "/storage/emulated/0/AndroidIDEProjects/Jekey/app/src/main/java/jekey/dealabs/screens/VerifyEmailScreen.kt",
+      "file": "/storage/emulated/0/AndroidIDEProjects/Jekey/app/src/main/java/jekey/dealabs/screens/MyFriendsScreen.kt",
       "selection": {
         "end": {
-          "column": 0,
-          "index": 0,
-          "line": 0
+          "column": 1,
+          "index": 9272,
+          "line": 198
         },
         "start": {
-          "column": 0,
-          "index": 0,
-          "line": 0
+          "column": 1,
+          "index": 9272,
+          "line": 198
         }
       }
     },
     {
-      "file": "/storage/emulated/0/AndroidIDEProjects/Jekey/app/src/main/java/jekey/dealabs/screens/DashboardScreen.kt",
+      "file": "/storage/emulated/0/AndroidIDEProjects/Jekey/app/src/main/java/jekey/dealabs/screens/FriendReqestsScreen.kt",
       "selection": {
         "end": {
-          "column": 16,
-          "index": 807,
-          "line": 20
+          "column": 1,
+          "index": 10657,
+          "line": 215
         },
         "start": {
-          "column": 16,
-          "index": 807,
-          "line": 20
+          "column": 1,
+          "index": 10657,
+          "line": 215
         }
       }
     },
     {
-      "file": "/storage/emulated/0/AndroidIDEProjects/Jekey/app/src/main/java/jekey/dealabs/Navigation/AppNavGraph.kt",
+      "file": "/storage/emulated/0/AndroidIDEProjects/Jekey/app/src/main/java/jekey/dealabs/screens/FindFriendsScreen.kt",
       "selection": {
         "end": {
-          "column": 4,
-          "index": 1066,
-          "line": 29
+          "column": 1,
+          "index": 13302,
+          "line": 267
         },
         "start": {
-          "column": 4,
-          "index": 1066,
-          "line": 29
+          "column": 1,
+          "index": 13302,
+          "line": 267
         }
       }
     }
   ],
-  "selectedFile": "/storage/emulated/0/AndroidIDEProjects/Jekey/app/src/main/java/jekey/dealabs/MainActivity.kt"
+  "selectedFile": "/storage/emulated/0/AndroidIDEProjects/Jekey/app/src/main/java/jekey/dealabs/screens/FindFriendsScreen.kt"
 }
