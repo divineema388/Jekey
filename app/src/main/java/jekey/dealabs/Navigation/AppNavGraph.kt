@@ -27,4 +27,8 @@ sealed class Screen(val route: String) {
     object CreatePost : Screen("create_post_screen")
     
     object Profile : Screen("profile_screen")
+    
+    object FindFriends : Screen("find_friends_screen")
+    object FriendRequests : Screen("friend_requests_screen")
+    object MyFriends : Screen("my_friends_screen")
 }

@@ -4,14 +4,14 @@
       "file": "/storage/emulated/0/AndroidIDEProjects/Jekey/app/src/main/java/jekey/dealabs/MainActivity.kt",
       "selection": {
         "end": {
-          "column": 1,
-          "index": 5082,
-          "line": 126
+          "column": 26,
+          "index": 4678,
+          "line": 117
         },
         "start": {
-          "column": 0,
-          "index": 0,
-          "line": 0
+          "column": 26,
+          "index": 4678,
+          "line": 117
         }
       }
     },
@@ -34,17 +34,32 @@
       "file": "/storage/emulated/0/AndroidIDEProjects/Jekey/app/src/main/java/jekey/dealabs/screens/DashboardScreen.kt",
       "selection": {
         "end": {
-          "column": 26,
-          "index": 1058,
-          "line": 26
+          "column": 16,
+          "index": 807,
+          "line": 20
         },
         "start": {
-          "column": 18,
-          "index": 1050,
-          "line": 26
+          "column": 16,
+          "index": 807,
+          "line": 20
+        }
+      }
+    },
+    {
+      "file": "/storage/emulated/0/AndroidIDEProjects/Jekey/app/src/main/java/jekey/dealabs/Navigation/AppNavGraph.kt",
+      "selection": {
+        "end": {
+          "column": 4,
+          "index": 1066,
+          "line": 29
+        },
+        "start": {
+          "column": 4,
+          "index": 1066,
+          "line": 29
         }
       }
     }
   ],
-  "selectedFile": "/storage/emulated/0/AndroidIDEProjects/Jekey/app/src/main/java/jekey/dealabs/screens/DashboardScreen.kt"
+  "selectedFile": "/storage/emulated/0/AndroidIDEProjects/Jekey/app/src/main/java/jekey/dealabs/MainActivity.kt"
 }
