@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "430209161465",
+    "firebase_url": "https://phone-ebf11-default-rtdb.firebaseio.com",
+    "project_id": "phone-ebf11",
+    "storage_bucket": "phone-ebf11.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:430209161465:android:e0b9ae9558c8c55332aa28",
+        "android_client_info": {
+          "package_name": "jeky.dealabs"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDRgwIAD5empoxj-KBtrodQcYT6wEXs1q0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

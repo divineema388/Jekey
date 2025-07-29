@@ -1,0 +1,5 @@
+# Keep essential classes in main DEX
+-keep class jeky.dealabs.MainActivity { *; }
+-keep class androidx.multidex.** { *; }
+-keep class com.google.firebase.** { *; }
+-keep class androidx.compose.runtime.** { *; }
