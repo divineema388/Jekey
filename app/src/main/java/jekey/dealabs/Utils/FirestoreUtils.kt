@@ -2,7 +2,6 @@
 package jeky.dealabs.utils
 
 import jeky.dealabs.models.User
-import jeky.dealabs.utils.NotificationUtils
 import android.content.Context
 import android.widget.Toast
 import com.google.firebase.firestore.FieldValue
@@ -63,7 +62,6 @@ object FirestoreUtils {
                 onFailure(e)
             }
     }
-
 
     /**
      * Create a repost
@@ -184,84 +182,84 @@ object FirestoreUtils {
     }
 
     /**
-     * Send a friend request with improved error handling and validation
+     * Send a friend request with notification support
      */
     fun sendFriendRequest(
-    firestore: FirebaseFirestore,
-    currentUserId: String,
-    targetUserId: String,
-    context: Context,
-    onSuccess: () -> Unit,
-    onFailure: (Exception) -> Unit
-) {
-    if (currentUserId == targetUserId) {
-        onFailure(Exception("Cannot send friend request to yourself"))
-        return
+        firestore: FirebaseFirestore,
+        currentUserId: String,
+        targetUserId: String,
+        context: Context,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        if (currentUserId == targetUserId) {
+            onFailure(Exception("Cannot send friend request to yourself"))
+            return
+        }
+
+        val currentUserRef = firestore.collection("users").document(currentUserId)
+        val targetUserRef = firestore.collection("users").document(targetUserId)
+
+        firestore.runTransaction { transaction ->
+            val currentUserSnapshot = transaction.get(currentUserRef)
+            val targetUserSnapshot = transaction.get(targetUserRef)
+
+            if (!currentUserSnapshot.exists()) {
+                throw Exception("Current user document not found")
+            }
+            if (!targetUserSnapshot.exists()) {
+                throw Exception("Target user not found")
+            }
+
+            val currentUser = currentUserSnapshot.toObject(User::class.java)
+            val targetUser = targetUserSnapshot.toObject(User::class.java)
+
+            val currentUserRequestsSent = currentUser?.friendRequestsSent?.toMutableList() ?: mutableListOf()
+            val currentUserFriends = currentUser?.friends?.toMutableList() ?: mutableListOf()
+            val targetUserRequestsReceived = targetUser?.friendRequestsReceived?.toMutableList() ?: mutableListOf()
+            val targetUserFriends = targetUser?.friends?.toMutableList() ?: mutableListOf()
+
+            // Check if they are already friends
+            if (currentUserFriends.contains(targetUserId)) {
+                throw Exception("You are already friends with this user")
+            }
+
+            // Check if request already sent
+            if (currentUserRequestsSent.contains(targetUserId)) {
+                throw Exception("Friend request already sent")
+            }
+
+            // Check if there's already a pending request from the target user
+            if (targetUserRequestsReceived.contains(currentUserId)) {
+                throw Exception("This user has already sent you a friend request")
+            }
+
+            // Add to current user's sent requests
+            currentUserRequestsSent.add(targetUserId)
+            transaction.update(currentUserRef, "friendRequestsSent", currentUserRequestsSent)
+
+            // Add to target user's received requests
+            targetUserRequestsReceived.add(currentUserId)
+            transaction.update(targetUserRef, "friendRequestsReceived", targetUserRequestsReceived)
+
+            // Return both users for notification
+            Pair(currentUser, targetUser)
+        }.addOnSuccessListener { userPair ->
+            val (currentUser, targetUser) = userPair
+            
+            // Send notification to target user
+            NotificationUtils.sendFriendRequestNotification(
+                context = context,
+                firestore = firestore,
+                targetUserId = targetUserId,
+                senderName = currentUser?.displayName ?: "Someone"
+            )
+            
+            onSuccess()
+        }.addOnFailureListener { e ->
+            onFailure(e)
+        }
     }
-
-    val currentUserRef = firestore.collection("users").document(currentUserId)
-    val targetUserRef = firestore.collection("users").document(targetUserId)
-
-    firestore.runTransaction { transaction ->
-        val currentUserSnapshot = transaction.get(currentUserRef)
-        val targetUserSnapshot = transaction.get(targetUserRef)
-
-        if (!currentUserSnapshot.exists()) {
-            throw Exception("Current user document not found")
-        }
-        if (!targetUserSnapshot.exists()) {
-            throw Exception("Target user not found")
-        }
-
-        val currentUser = currentUserSnapshot.toObject(User::class.java)
-        val targetUser = targetUserSnapshot.toObject(User::class.java)
-
-        val currentUserRequestsSent = currentUser?.friendRequestsSent?.toMutableList() ?: mutableListOf()
-        val currentUserFriends = currentUser?.friends?.toMutableList() ?: mutableListOf()
-        val targetUserRequestsReceived = targetUser?.friendRequestsReceived?.toMutableList() ?: mutableListOf()
-        val targetUserFriends = targetUser?.friends?.toMutableList() ?: mutableListOf()
-
-        // Check if they are already friends
-        if (currentUserFriends.contains(targetUserId)) {
-            throw Exception("You are already friends with this user")
-        }
-
-        // Check if request already sent
-        if (currentUserRequestsSent.contains(targetUserId)) {
-            throw Exception("Friend request already sent")
-        }
-
-        // Check if there's already a pending request from the target user
-        if (targetUserRequestsReceived.contains(currentUserId)) {
-            throw Exception("This user has already sent you a friend request")
-        }
-
-        // Add to current user's sent requests
-        currentUserRequestsSent.add(targetUserId)
-        transaction.update(currentUserRef, "friendRequestsSent", currentUserRequestsSent)
-
-        // Add to target user's received requests
-        targetUserRequestsReceived.add(currentUserId)
-        transaction.update(targetUserRef, "friendRequestsReceived", targetUserRequestsReceived)
-
-        // Return both users for notification
-        Pair(currentUser, targetUser)
-    }.addOnSuccessListener { userPair ->
-        val (currentUser, targetUser) = userPair
-        
-        // Send notification to target user
-        NotificationUtils.sendFriendRequestNotification(
-            context = context,
-            firestore = firestore,
-            targetUserId = targetUserId,
-            senderName = currentUser?.displayName ?: "Someone"
-        )
-        
-        onSuccess()
-    }.addOnFailureListener { e ->
-        onFailure(e)
-    }
-}
 
     /**
      * Accept a friend request

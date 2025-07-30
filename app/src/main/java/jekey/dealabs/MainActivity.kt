@@ -67,35 +67,40 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun setupNotifications() {
-        // Create notification channel
-        NotificationUtils.createNotificationChannel(this)
-        
-        // Get FCM token and save to user document
-        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
-            if (!task.isSuccessful) {
-                return@addOnCompleteListener
-            }
+    // Add this to your setupNotifications() method in MainActivity
+private fun setupNotifications() {
+    // Create notification channel
+    NotificationUtils.createNotificationChannel(this)
+    
+    // Get FCM token and save to user document
+    FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+        if (!task.isSuccessful) {
+            return@addOnCompleteListener
+        }
 
-            // Get new FCM registration token
-            val token = task.result
-            val currentUser = auth.currentUser
-            
-            if (currentUser != null && token != null) {
-                firestore.collection("users")
-                    .document(currentUser.uid)
-                    .update("fcmToken", token)
-            }
-        }
+        // Get new FCM registration token
+        val token = task.result
+        val currentUser = auth.currentUser
         
-        // Check for pending notifications when user logs in
-        auth.currentUser?.let { user ->
-            NotificationUtils.checkPendingNotifications(this, firestore, user.uid)
-        }
+        // DEBUG: Log the token for testing
+        println("FCM Token: $token")
+        android.util.Log.d("FCM_TOKEN", "Token: $token")
         
-        // Handle navigation from notification
-        handleNotificationNavigation()
+        if (currentUser != null && token != null) {
+            firestore.collection("users")
+                .document(currentUser.uid)
+                .update("fcmToken", token)
+        }
     }
+    
+    // Check for pending notifications when user logs in
+    auth.currentUser?.let { user ->
+        NotificationUtils.checkPendingNotifications(this, firestore, user.uid)
+    }
+    
+    // Handle navigation from notification
+    handleNotificationNavigation()
+}
 
     private fun handleNotificationNavigation() {
         val navigationTarget = intent.getStringExtra("navigation_target")

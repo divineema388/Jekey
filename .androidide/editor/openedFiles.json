@@ -49,14 +49,14 @@
       "file": "/storage/emulated/0/AndroidIDEProjects/Jekey/app/src/main/java/jekey/dealabs/Utils/FirestoreUtils.kt",
       "selection": {
         "end": {
-          "column": 43,
-          "index": 143,
-          "line": 4
+          "column": 1,
+          "index": 20772,
+          "line": 577
         },
         "start": {
-          "column": 43,
-          "index": 143,
-          "line": 4
+          "column": 1,
+          "index": 20772,
+          "line": 577
         }
       }
     },
@@ -155,13 +155,13 @@
       "selection": {
         "end": {
           "column": 1,
-          "index": 7582,
-          "line": 192
+          "index": 3819,
+          "line": 102
         },
         "start": {
           "column": 1,
-          "index": 7582,
-          "line": 192
+          "index": 3819,
+          "line": 102
         }
       }
     },
@@ -179,7 +179,22 @@
           "line": 70
         }
       }
+    },
+    {
+      "file": "/storage/emulated/0/AndroidIDEProjects/Jekey/app/src/main/java/jekey/dealabs/screens/DashboardScreen.kt",
+      "selection": {
+        "end": {
+          "column": 0,
+          "index": 0,
+          "line": 0
+        },
+        "start": {
+          "column": 0,
+          "index": 0,
+          "line": 0
+        }
+      }
     }
   ],
-  "selectedFile": "/storage/emulated/0/AndroidIDEProjects/Jekey/app/src/main/res/drawable/ic_notification.xml"
+  "selectedFile": "/storage/emulated/0/AndroidIDEProjects/Jekey/app/src/main/java/jekey/dealabs/MainActivity.kt"
 }
