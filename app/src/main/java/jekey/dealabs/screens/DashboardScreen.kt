@@ -87,6 +87,36 @@ fun DashboardScreen(navController: NavHostController, username: String, auth: Fi
         // No action needed here as PostCard manages its own dialog state.
         // This is just to satisfy the PostCard signature.
     }
+    
+    val onDeleteClick: (String) -> Unit = { postId ->
+        FirestoreUtils.deletePost(
+            firestore = firestore,
+            postId = postId,
+            onSuccess = {
+                Toast.makeText(context, "Post deleted successfully", Toast.LENGTH_SHORT).show()
+            },
+            onFailure = { e ->
+                Toast.makeText(context, "Failed to delete post: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        )
+    }
+
+    val onRepostClick: (String) -> Unit = { postId ->
+        currentUser?.let { user ->
+            FirestoreUtils.createRepost(
+                firestore = firestore,
+                originalPostId = postId,
+                currentUserId = user.uid,
+                currentUsername = user.displayName ?: username,
+                onSuccess = {
+                    Toast.makeText(context, "Post reposted successfully", Toast.LENGTH_SHORT).show()
+                },
+                onFailure = { e ->
+                    Toast.makeText(context, "Failed to repost: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            )
+        } ?: Toast.makeText(context, "Please log in to repost.", Toast.LENGTH_SHORT).show()
+    }
 
 
     ModalNavigationDrawer(
@@ -203,11 +233,14 @@ fun DashboardScreen(navController: NavHostController, username: String, auth: Fi
                     ) {
                         items(posts, key = { it.id }) { post ->
                             PostCard(
-                                post = post,
-                                currentUserId = currentUser?.uid,
-                                onLikeClick = onLikeClick,
-                                onCommentClick = onCommentClick // Pass the onCommentClick lambda here
-                            )
+        post = post,
+        currentUserId = currentUser?.uid,
+        onLikeClick = onLikeClick,
+        onCommentClick = onCommentClick,
+        onDeleteClick = onDeleteClick,
+        onRepostClick = onRepostClick,
+        commentCount = post.commentCount
+    )
                         }
                     }
                 }

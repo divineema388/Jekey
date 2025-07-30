@@ -44,7 +44,22 @@
           "line": 144
         }
       }
+    },
+    {
+      "file": "/storage/emulated/0/AndroidIDEProjects/Jekey/app/src/main/java/jekey/dealabs/screens/DashboardScreen.kt",
+      "selection": {
+        "end": {
+          "column": 5,
+          "index": 10104,
+          "line": 242
+        },
+        "start": {
+          "column": 5,
+          "index": 10104,
+          "line": 242
+        }
+      }
     }
   ],
-  "selectedFile": "/storage/emulated/0/AndroidIDEProjects/Jekey/app/src/main/java/jekey/dealabs/Utils/FirestoreUtils.kt"
+  "selectedFile": "/storage/emulated/0/AndroidIDEProjects/Jekey/app/src/main/java/jekey/dealabs/screens/DashboardScreen.kt"
 }
