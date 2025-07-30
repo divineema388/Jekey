@@ -105,6 +105,9 @@ dependencies {
     // Jetpack Navigation Compose - Latest stable version
     implementation("androidx.navigation:navigation-compose:2.7.6")
     
+    // Add this to your dependencies block
+implementation 'com.google.firebase:firebase-messaging:23.2.1'
+    
     // MultiDex support
     implementation("androidx.multidex:multidex:2.0.1")
 }

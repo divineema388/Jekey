@@ -8,7 +8,8 @@ data class User(
     val displayName: String = "",
     val email: String = "",
     val profileImage: String? = null,
-    @PropertyName("friendRequestsSent") val friendRequestsSent: List<String> = emptyList(), // UIDs of users this user has sent requests to
-    @PropertyName("friendRequestsReceived") val friendRequestsReceived: List<String> = emptyList(), // UIDs of users who have sent requests to this user
-    val friends: List<String> = emptyList() // UIDs of confirmed friends
+    @PropertyName("friendRequestsSent") val friendRequestsSent: List<String> = emptyList(),
+    @PropertyName("friendRequestsReceived") val friendRequestsReceived: List<String> = emptyList(),
+    val friends: List<String> = emptyList(),
+    val fcmToken: String? = null // Add FCM token for notifications
 )
