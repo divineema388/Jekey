@@ -17,6 +17,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import jeky.dealabs.models.User
 import jeky.dealabs.utils.FirestoreUtils
+import kotlinx.coroutines.tasks.await
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -29,49 +30,49 @@ fun FriendRequestsScreen(navController: NavHostController, auth: FirebaseAuth) {
     var isLoading by remember { mutableStateOf(true) }
     var requestCount by remember { mutableStateOf(0) }
 
-    // Remember the listener to avoid memory leaks
     var listenerRegistration by remember { mutableStateOf<ListenerRegistration?>(null) }
 
-    DisposableEffect(currentUser?.uid) {
+    LaunchedEffect(currentUser?.uid) {
         currentUser?.uid?.let { uid ->
             listenerRegistration = firestore.collection("users").document(uid)
-                .addSnapshotListener { currentUserSnapshot, e ->
+                .addSnapshotListener { snapshot, e ->
                     if (e != null) {
-                        Toast.makeText(context, "Error loading requests: ${e.message}", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
                         isLoading = false
                         return@addSnapshotListener
                     }
 
-                    if (currentUserSnapshot != null && currentUserSnapshot.exists()) {
-                        val user = currentUserSnapshot.toObject(User::class.java)
-                        val receivedRequestUids = user?.friendRequestsReceived ?: emptyList()
-                        requestCount = receivedRequestUids.size
+                    if (snapshot != null && snapshot.exists()) {
+                        val user = snapshot.toObject(User::class.java)
+                        val requestIds = user?.friendRequestsReceived ?: emptyList()
+                        requestCount = requestIds.size
 
-                        if (receivedRequestUids.isNotEmpty()) {
-                            // Use chunked approach for large request lists (Firestore has 10 item limit for whereIn)
-                            val chunks = receivedRequestUids.chunked(10)
-                            val allRequests = mutableListOf<User>()
-                            var completedChunks = 0
+                        if (requestIds.isNotEmpty()) {
+                            // Fetch user details for each request ID
+                            val requestUsers = mutableListOf<User>()
+                            var completed = 0
 
-                            chunks.forEach { chunk ->
-                                firestore.collection("users")
-                                    .whereIn("uid", chunk)
+                            requestIds.forEach { requestId ->
+                                firestore.collection("users").document(requestId)
                                     .get()
-                                    .addOnSuccessListener { querySnapshot ->
-                                        allRequests.addAll(querySnapshot.documents.mapNotNull { 
-                                            it.toObject(User::class.java) 
-                                        })
-                                        completedChunks++
-                                        
-                                        if (completedChunks == chunks.size) {
+                                    .addOnSuccessListener { userDoc ->
+                                        userDoc.toObject(User::class.java)?.let { requestUser ->
+                                            requestUsers.add(requestUser)
+                                        }
+                                        completed++
+                                        if (completed == requestIds.size) {
                                             friendRequests.clear()
-                                            friendRequests.addAll(allRequests.sortedBy { it.displayName })
+                                            friendRequests.addAll(requestUsers.sortedBy { it.displayName })
                                             isLoading = false
                                         }
                                     }
-                                    .addOnFailureListener { innerE ->
-                                        Toast.makeText(context, "Error fetching request user details: ${innerE.message}", Toast.LENGTH_SHORT).show()
-                                        isLoading = false
+                                    .addOnFailureListener {
+                                        completed++
+                                        if (completed == requestIds.size) {
+                                            friendRequests.clear()
+                                            friendRequests.addAll(requestUsers.sortedBy { it.displayName })
+                                            isLoading = false
+                                        }
                                     }
                             }
                         } else {
@@ -85,7 +86,9 @@ fun FriendRequestsScreen(navController: NavHostController, auth: FirebaseAuth) {
                     }
                 }
         }
+    }
 
+    DisposableEffect(Unit) {
         onDispose {
             listenerRegistration?.remove()
         }
@@ -116,8 +119,6 @@ fun FriendRequestsScreen(navController: NavHostController, auth: FirebaseAuth) {
                 ) {
                     CircularProgressIndicator()
                 }
-                Spacer(modifier = Modifier.height(16.dp))
-                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
             } else if (friendRequests.isEmpty()) {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
@@ -173,7 +174,7 @@ fun FriendRequestsScreen(navController: NavHostController, auth: FirebaseAuth) {
                                                         Toast.makeText(context, "Accepted ${user.displayName}", Toast.LENGTH_SHORT).show() 
                                                     },
                                                     onFailure = { e -> 
-                                                        Toast.makeText(context, "Error accepting: ${e.message}", Toast.LENGTH_SHORT).show() 
+                                                        Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show() 
                                                     }
                                                 )
                                             }
@@ -194,7 +195,7 @@ fun FriendRequestsScreen(navController: NavHostController, auth: FirebaseAuth) {
                                                         Toast.makeText(context, "Declined ${user.displayName}", Toast.LENGTH_SHORT).show() 
                                                     },
                                                     onFailure = { e -> 
-                                                        Toast.makeText(context, "Error declining: ${e.message}", Toast.LENGTH_SHORT).show() 
+                                                        Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show() 
                                                     }
                                                 )
                                             }

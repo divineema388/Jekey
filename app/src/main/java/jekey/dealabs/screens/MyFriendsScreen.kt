@@ -29,55 +29,49 @@ fun MyFriendsScreen(navController: NavHostController, auth: FirebaseAuth) {
     var isLoading by remember { mutableStateOf(true) }
     var friendsCount by remember { mutableStateOf(0) }
 
-    // Remember the listener to avoid memory leaks
     var listenerRegistration by remember { mutableStateOf<ListenerRegistration?>(null) }
 
-    DisposableEffect(currentUser?.uid) {
+    LaunchedEffect(currentUser?.uid) {
         currentUser?.uid?.let { uid ->
             listenerRegistration = firestore.collection("users").document(uid)
-                .addSnapshotListener { currentUserSnapshot, e ->
+                .addSnapshotListener { snapshot, e ->
                     if (e != null) {
-                        Toast.makeText(context, "Error loading friends: ${e.message}", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
                         isLoading = false
                         return@addSnapshotListener
                     }
 
-                    if (currentUserSnapshot != null && currentUserSnapshot.exists()) {
-                        val user = currentUserSnapshot.toObject(User::class.java)
-                        val friendUids = user?.friends ?: emptyList()
-                        friendsCount = friendUids.size
+                    if (snapshot != null && snapshot.exists()) {
+                        val user = snapshot.toObject(User::class.java)
+                        val friendIds = user?.friends ?: emptyList()
+                        friendsCount = friendIds.size
 
-                        if (friendUids.isNotEmpty()) {
-                            // Use chunked approach for large friend lists (Firestore has 10 item limit for whereIn)
-                            val chunks = friendUids.chunked(10)
-                            val allFriends = mutableListOf<User>()
-                            var completedChunks = 0
+                        if (friendIds.isNotEmpty()) {
+                            // Fetch user details for each friend ID
+                            val friends = mutableListOf<User>()
+                            var completed = 0
 
-                            if (chunks.isEmpty()) {
-                                friendsList.clear()
-                                isLoading = false
-                                return@addSnapshotListener
-                            }
-
-                            chunks.forEach { chunk ->
-                                firestore.collection("users")
-                                    .whereIn("uid", chunk)
+                            friendIds.forEach { friendId ->
+                                firestore.collection("users").document(friendId)
                                     .get()
-                                    .addOnSuccessListener { querySnapshot ->
-                                        allFriends.addAll(querySnapshot.documents.mapNotNull { 
-                                            it.toObject(User::class.java) 
-                                        })
-                                        completedChunks++
-                                        
-                                        if (completedChunks == chunks.size) {
+                                    .addOnSuccessListener { userDoc ->
+                                        userDoc.toObject(User::class.java)?.let { friendUser ->
+                                            friends.add(friendUser)
+                                        }
+                                        completed++
+                                        if (completed == friendIds.size) {
                                             friendsList.clear()
-                                            friendsList.addAll(allFriends.sortedBy { it.displayName })
+                                            friendsList.addAll(friends.sortedBy { it.displayName })
                                             isLoading = false
                                         }
                                     }
-                                    .addOnFailureListener { innerE ->
-                                        Toast.makeText(context, "Error fetching friend details: ${innerE.message}", Toast.LENGTH_SHORT).show()
-                                        isLoading = false
+                                    .addOnFailureListener {
+                                        completed++
+                                        if (completed == friendIds.size) {
+                                            friendsList.clear()
+                                            friendsList.addAll(friends.sortedBy { it.displayName })
+                                            isLoading = false
+                                        }
                                     }
                             }
                         } else {
@@ -91,7 +85,9 @@ fun MyFriendsScreen(navController: NavHostController, auth: FirebaseAuth) {
                     }
                 }
         }
+    }
 
+    DisposableEffect(Unit) {
         onDispose {
             listenerRegistration?.remove()
         }
@@ -122,8 +118,6 @@ fun MyFriendsScreen(navController: NavHostController, auth: FirebaseAuth) {
                 ) {
                     CircularProgressIndicator()
                 }
-                Spacer(modifier = Modifier.height(16.dp))
-                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
             } else if (friendsList.isEmpty()) {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
@@ -178,7 +172,7 @@ fun MyFriendsScreen(navController: NavHostController, auth: FirebaseAuth) {
                                                     Toast.makeText(context, "Removed ${friendUser.displayName}", Toast.LENGTH_SHORT).show() 
                                                 },
                                                 onFailure = { e -> 
-                                                    Toast.makeText(context, "Error removing friend: ${e.message}", Toast.LENGTH_SHORT).show() 
+                                                    Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show() 
                                                 }
                                             )
                                         }
