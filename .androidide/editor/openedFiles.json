@@ -140,12 +140,12 @@
       "selection": {
         "end": {
           "column": 9,
-          "index": 489,
+          "index": 477,
           "line": 9
         },
         "start": {
           "column": 9,
-          "index": 489,
+          "index": 477,
           "line": 9
         }
       }
@@ -181,5 +181,5 @@
       }
     }
   ],
-  "selectedFile": "/storage/emulated/0/AndroidIDEProjects/Jekey/app/src/main/res/values/colors.xml"
+  "selectedFile": "/storage/emulated/0/AndroidIDEProjects/Jekey/app/src/main/res/drawable/ic_notification.xml"
 }
