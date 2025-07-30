@@ -124,13 +124,13 @@
       "file": "/storage/emulated/0/AndroidIDEProjects/Jekey/app/build.gradle.kts",
       "selection": {
         "end": {
-          "column": 62,
-          "index": 3455,
+          "column": 63,
+          "index": 3472,
           "line": 108
         },
         "start": {
-          "column": 62,
-          "index": 3455,
+          "column": 63,
+          "index": 3472,
           "line": 108
         }
       }
@@ -166,5 +166,5 @@
       }
     }
   ],
-  "selectedFile": "/storage/emulated/0/AndroidIDEProjects/Jekey/app/src/main/java/jekey/dealabs/MainActivity.kt"
+  "selectedFile": "/storage/emulated/0/AndroidIDEProjects/Jekey/app/build.gradle.kts"
 }
