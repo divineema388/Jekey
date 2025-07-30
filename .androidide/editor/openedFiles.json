@@ -1,65 +1,50 @@
 {
   "allFiles": [
     {
+      "file": "/storage/emulated/0/AndroidIDEProjects/Jekey/app/src/main/java/jekey/dealabs/components/postCard.kt",
+      "selection": {
+        "end": {
+          "column": 1,
+          "index": 11051,
+          "line": 271
+        },
+        "start": {
+          "column": 1,
+          "index": 11051,
+          "line": 271
+        }
+      }
+    },
+    {
+      "file": "/storage/emulated/0/AndroidIDEProjects/Jekey/app/src/main/java/jekey/dealabs/models/post.kt",
+      "selection": {
+        "end": {
+          "column": 1,
+          "index": 1437,
+          "line": 25
+        },
+        "start": {
+          "column": 1,
+          "index": 1437,
+          "line": 25
+        }
+      }
+    },
+    {
       "file": "/storage/emulated/0/AndroidIDEProjects/Jekey/app/src/main/java/jekey/dealabs/Utils/FirestoreUtils.kt",
       "selection": {
         "end": {
-          "column": 1,
-          "index": 16463,
-          "line": 459
+          "column": 5,
+          "index": 4645,
+          "line": 144
         },
         "start": {
-          "column": 1,
-          "index": 16463,
-          "line": 459
-        }
-      }
-    },
-    {
-      "file": "/storage/emulated/0/AndroidIDEProjects/Jekey/app/src/main/java/jekey/dealabs/screens/MyFriendsScreen.kt",
-      "selection": {
-        "end": {
-          "column": 1,
-          "index": 8759,
-          "line": 192
-        },
-        "start": {
-          "column": 1,
-          "index": 8759,
-          "line": 192
-        }
-      }
-    },
-    {
-      "file": "/storage/emulated/0/AndroidIDEProjects/Jekey/app/src/main/java/jekey/dealabs/screens/FriendReqestsScreen.kt",
-      "selection": {
-        "end": {
-          "column": 0,
-          "index": 10413,
-          "line": 217
-        },
-        "start": {
-          "column": 0,
-          "index": 10413,
-          "line": 217
-        }
-      }
-    },
-    {
-      "file": "/storage/emulated/0/AndroidIDEProjects/Jekey/app/src/main/java/jekey/dealabs/screens/FindFriendsScreen.kt",
-      "selection": {
-        "end": {
-          "column": 1,
-          "index": 13302,
-          "line": 267
-        },
-        "start": {
-          "column": 1,
-          "index": 13302,
-          "line": 267
+          "column": 5,
+          "index": 4645,
+          "line": 144
         }
       }
     }
   ],
-  "selectedFile": "/storage/emulated/0/AndroidIDEProjects/Jekey/app/src/main/java/jekey/dealabs/screens/MyFriendsScreen.kt"
+  "selectedFile": "/storage/emulated/0/AndroidIDEProjects/Jekey/app/src/main/java/jekey/dealabs/Utils/FirestoreUtils.kt"
 }

@@ -1,4 +1,3 @@
-// jeky/dealabs/components/PostCard.kt
 package jeky.dealabs.components
 
 import androidx.compose.foundation.layout.*
@@ -14,6 +13,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.ChatBubbleOutline
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.Repeat
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -24,12 +27,24 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
 import jeky.dealabs.screens.CommentsDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PostCard(post: Post, currentUserId: String?, onLikeClick: (String) -> Unit, onCommentClick: (String) -> Unit) {
+fun PostCard(
+    post: Post, 
+    currentUserId: String?, 
+    onLikeClick: (String) -> Unit, 
+    onCommentClick: (String) -> Unit,
+    onDeleteClick: (String) -> Unit = {},
+    onRepostClick: (String) -> Unit = {},
+    commentCount: Int = 0
+) {
     var showCommentsDialog by remember { mutableStateOf(false) }
+    var showDropdownMenu by remember { mutableStateOf(false) }
+    val clipboardManager = LocalClipboardManager.current
 
     // Function to convert base64 to bitmap
     fun base64ToBitmap(base64String: String): Bitmap? {
@@ -50,8 +65,30 @@ fun PostCard(post: Post, currentUserId: String?, onLikeClick: (String) -> Unit, 
         Column(
             modifier = Modifier.padding(16.dp)
         ) {
-            // Profile picture and username row
+            // Show repost indicator if this is a repost
+            if (post.isRepost == true) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(bottom = 4.dp)
+                ) {
+                    Icon(
+                        Icons.Filled.Repeat,
+                        contentDescription = "Repost",
+                        modifier = Modifier.size(16.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "Reposted by ${post.reposterUsername ?: "Unknown"}",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+
+            // Profile picture, username and menu row
             Row(
+                modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 // Profile picture
@@ -94,8 +131,71 @@ fun PostCard(post: Post, currentUserId: String?, onLikeClick: (String) -> Unit, 
                 Text(
                     text = "Posted by ${post.username}",
                     style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.primary
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.weight(1f)
                 )
+                
+                // Three dots menu
+                Box {
+                    IconButton(onClick = { showDropdownMenu = true }) {
+                        Icon(
+                            Icons.Filled.MoreVert,
+                            contentDescription = "More options"
+                        )
+                    }
+                    
+                    DropdownMenu(
+                        expanded = showDropdownMenu,
+                        onDismissRequest = { showDropdownMenu = false }
+                    ) {
+                        // Delete option (only for post owner)
+                        if (currentUserId == post.userId) {
+                            DropdownMenuItem(
+                                text = { Text("Delete") },
+                                onClick = {
+                                    onDeleteClick(post.id)
+                                    showDropdownMenu = false
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        Icons.Filled.Delete,
+                                        contentDescription = "Delete"
+                                    )
+                                }
+                            )
+                        }
+                        
+                        // Copy option
+                        DropdownMenuItem(
+                            text = { Text("Copy") },
+                            onClick = {
+                                clipboardManager.setText(AnnotatedString(post.textContent ?: ""))
+                                showDropdownMenu = false
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    Icons.Filled.ContentCopy,
+                                    contentDescription = "Copy"
+                                )
+                            }
+                        )
+                        
+                        // Repost option
+                        DropdownMenuItem(
+                            text = { Text("Repost") },
+                            onClick = {
+                                onRepostClick(post.id)
+                                showDropdownMenu = false
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    Icons.Filled.Repeat,
+                                    contentDescription = "Repost"
+                                )
+                            }
+                        )
+                    }
+                }
             }
             
             Spacer(modifier = Modifier.height(8.dp))
@@ -152,7 +252,7 @@ fun PostCard(post: Post, currentUserId: String?, onLikeClick: (String) -> Unit, 
                         )
                     }
                     Text(
-                        text = "0", // Placeholder for comment count
+                        text = "$commentCount",
                         style = MaterialTheme.typography.labelMedium
                     )
                 }

@@ -1,4 +1,3 @@
-// jeky/dealabs/models/Post.kt
 package jeky.dealabs.models
 
 import com.google.firebase.firestore.DocumentId
@@ -19,5 +18,9 @@ data class Post(
     @ServerTimestamp // Firestore will automatically populate this with the server's timestamp
     val timestamp: Date? = null, // When the post was created
     val profileImage: String? = null, // Base64 encoded profile image
-    val likes: List<String> = emptyList() // List of user IDs who have liked this post
+    val likes: List<String> = emptyList(), // List of user IDs who have liked this post
+    val isRepost: Boolean = false, // Indicates if this is a repost
+    val reposterUsername: String? = null, // Username of the person who reposted (if it's a repost)
+    val originalPostId: String? = null, // ID of the original post (if this is a repost)
+    val commentCount: Int = 0 // Number of comments on this post
 )

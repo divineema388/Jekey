@@ -43,6 +43,106 @@ object FirestoreUtils {
                 onFailure(e)
             }
     }
+    
+    /**
+     * Delete a post from Firestore
+     */
+    fun deletePost(
+        firestore: FirebaseFirestore,
+        postId: String,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        firestore.collection("posts").document(postId)
+            .delete()
+            .addOnSuccessListener {
+                onSuccess()
+            }
+            .addOnFailureListener { e ->
+                onFailure(e)
+            }
+    }
+
+
+    /**
+     * Create a repost
+     */
+    fun createRepost(
+        firestore: FirebaseFirestore,
+        originalPostId: String,
+        currentUserId: String,
+        currentUsername: String,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        // First, get the original post
+        firestore.collection("posts").document(originalPostId)
+            .get()
+            .addOnSuccessListener { originalPostSnapshot ->
+                if (originalPostSnapshot.exists()) {
+                    val originalPost = originalPostSnapshot.toObject(Post::class.java)
+                    if (originalPost != null) {
+                        // Create repost with original content but new metadata
+                        val repost = originalPost.copy(
+                            id = "", // Will be auto-generated
+                            userId = currentUserId,
+                            username = originalPost.username, // Keep original author
+                            isRepost = true,
+                            reposterUsername = currentUsername,
+                            originalPostId = originalPostId,
+                            likes = emptyList(), // Reset likes for repost
+                            commentCount = 0, // Reset comment count for repost
+                            timestamp = null // Will be set by @ServerTimestamp
+                        )
+
+                        firestore.collection("posts")
+                            .add(repost)
+                            .addOnSuccessListener {
+                                onSuccess()
+                            }
+                            .addOnFailureListener { e ->
+                                onFailure(e)
+                            }
+                    } else {
+                        onFailure(Exception("Could not parse original post"))
+                    }
+                } else {
+                    onFailure(Exception("Original post not found"))
+                }
+            }
+            .addOnFailureListener { e ->
+                onFailure(e)
+            }
+    }
+
+    /**
+     * Delete a comment and update comment count
+     */
+    fun deleteComment(
+        firestore: FirebaseFirestore,
+        postId: String,
+        commentId: String,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        firestore.collection("posts").document(postId)
+            .collection("comments").document(commentId)
+            .delete()
+            .addOnSuccessListener {
+                // Update comment count in the post document
+                firestore.collection("posts").document(postId)
+                    .update("commentCount", FieldValue.increment(-1))
+                    .addOnSuccessListener {
+                        onSuccess()
+                    }
+                    .addOnFailureListener { e ->
+                        onFailure(e)
+                    }
+            }
+            .addOnFailureListener { e ->
+                onFailure(e)
+            }
+    }
 
     /**
      * Save a comment to a post's subcollection in Firestore
@@ -67,7 +167,15 @@ object FirestoreUtils {
             .collection("comments")
             .add(comment)
             .addOnSuccessListener {
-                onSuccess()
+                // Update comment count in the post document
+                firestore.collection("posts").document(postId)
+                    .update("commentCount", FieldValue.increment(1))
+                    .addOnSuccessListener {
+                        onSuccess()
+                    }
+                    .addOnFailureListener { e ->
+                        onFailure(e)
+                    }
             }
             .addOnFailureListener { e ->
                 onFailure(e)
