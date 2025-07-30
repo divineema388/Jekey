@@ -67,5 +67,7 @@
     <color name="md_theme_dark_shadow">#000000</color>
     <color name="md_theme_dark_surfaceTint">#CFBCFF</color>
     <color name="md_theme_dark_outlineVariant">#49454E</color>
+    <!-- Add this line to your res/values/colors.xml -->
+<color name="notification_color">#FF6200EE</color>
     <color name="md_theme_dark_scrim">#000000</color>
 </resources>

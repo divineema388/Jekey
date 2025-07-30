@@ -164,7 +164,22 @@
           "line": 192
         }
       }
+    },
+    {
+      "file": "/storage/emulated/0/AndroidIDEProjects/Jekey/app/src/main/res/values/colors.xml",
+      "selection": {
+        "end": {
+          "column": 50,
+          "index": 4108,
+          "line": 70
+        },
+        "start": {
+          "column": 50,
+          "index": 4108,
+          "line": 70
+        }
+      }
     }
   ],
-  "selectedFile": "/storage/emulated/0/AndroidIDEProjects/Jekey/app/build.gradle.kts"
+  "selectedFile": "/storage/emulated/0/AndroidIDEProjects/Jekey/app/src/main/res/values/colors.xml"
 }
